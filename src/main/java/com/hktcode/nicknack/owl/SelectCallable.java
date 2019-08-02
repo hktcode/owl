@@ -52,16 +52,21 @@ public class SelectCallable implements Callable<Duration>
     public Duration call() throws InterruptedException, SQLException
     {
         ZonedDateTime starts = ZonedDateTime.now();
-        JdbcTemplateBase jdbc = JdbcTemplateBase.getJdbcTemplate(select.engineid);
+        JdbcTemplateBase jdbc //
+            = JdbcTemplateBase.getJdbcTemplate(select.engineid);
         long offerMillis = 0;
         try (Connection cnt = jdbc.getDataSource().getConnection()) {
             boolean autoCommit = cnt.getAutoCommit();
             cnt.setAutoCommit(false);
             // TODO: 针对MySQL，可能有优化空间。
-            PreparedStatementCreator psc = jdbc.newForwardPreparedStatementCreator(select.execcode);
+            PreparedStatementCreator psc //
+                = jdbc.newForwardPreparedStatementCreator(select.execcode);
             try (PreparedStatement ps = psc.createPreparedStatement(cnt)) {
-                for (int i = 0; i < select.argument.size(); ++i) {
-                    ps.setObject(i + 1, params.get(select.argument.get(i)));
+                final int argvsize = select.argument.size();
+                for (int i = 0; i < argvsize; ++i) {
+                    final String argkey = select.argument.get(i);
+                    final Object argval = params.get(argkey);
+                    ps.setObject(i + 1, argval);
                 }
                 ps.execute();
                 ResultSet resultSet = ps.getResultSet();
@@ -72,15 +77,17 @@ public class SelectCallable implements Callable<Duration>
                         while (rs.next()) {
                             ImmutableMap.Builder<String, Object> builder //
                                 = ImmutableMap.builder();
-                            for (int i = 0; i < metaData.getColumnCount(); ++i) {
+                            final int columnCount = metaData.getColumnCount();
+                            for (int i = 0; i < columnCount; ++i) {
                                 final int index = i + 1;
                                 String label = metaData.getColumnLabel(index);
                                 Object value = rs.getObject(index);
                                 value = (value == null ? SQL_NULL : value);
                                 builder.put(label, value);
                             }
-                            ImmutableMap<String, Object> tuple = builder.build();
-                            offerMillis += this.push(RecordSelectNormal.of(tuple));
+                            ImmutableMap<String, Object> t = builder.build();
+                            RecordSelectNormal r = RecordSelectNormal.of(t);
+                            offerMillis += this.push(r);
                         }
                     }
                 }
@@ -117,7 +124,6 @@ public class SelectCallable implements Callable<Duration>
             logger.warn("query offer fail: name={}", select.codename);
         }
         long finish = System.currentTimeMillis();
-        long result = finish - starts;
-        return result;
+        return finish - starts;
     }
 }

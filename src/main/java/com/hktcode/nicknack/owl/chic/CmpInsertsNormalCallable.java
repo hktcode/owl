@@ -209,5 +209,4 @@ public class CmpInsertsNormalCallable implements Callable<Duration>
         builder.append(")");
         return builder.toString();
     }
-
 }
