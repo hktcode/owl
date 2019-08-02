@@ -11,7 +11,7 @@ import com.hktcode.nicknack.owl.SqlScriptEntity;
 public class CmpInsertsEntity extends CmpOperateEntity
 {
     public CmpInsertsEntity //
-        /* */(String taskname //
+        /* */( String taskname //
         /* */, String relation //
         /* */, SqlScriptEntity oldtuple //
         /* */, SqlScriptEntity newtuple //
