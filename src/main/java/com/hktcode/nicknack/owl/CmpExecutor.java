@@ -197,19 +197,19 @@ public abstract class CmpExecutor<T extends CmpOperateEntity>
             return lhs.compareTo(rhs);
         }
         else if (lhsval instanceof String && rhsval instanceof String) {
-            ByteBuffer lhs = ByteBuffer.wrap(((String)lhsval).getBytes(StandardCharsets.UTF_8));
-            ByteBuffer rhs = ByteBuffer.wrap(((String)rhsval).getBytes(StandardCharsets.UTF_8));
-            return lhs.compareTo(rhs);
+            byte[] lhs = ((String)lhsval).getBytes(StandardCharsets.UTF_8);
+            byte[] rhs = ((String)rhsval).getBytes(StandardCharsets.UTF_8);
+            return compareUnsingedBytes(lhs, rhs);
         }
         else if (lhsval instanceof byte[] && rhsval instanceof byte[]) {
-            ByteBuffer lhs = ByteBuffer.wrap((byte[])lhsval);
-            ByteBuffer rhs = ByteBuffer.wrap((byte[])rhsval);
-            return lhs.compareTo(rhs);
+            byte[] lhs = (byte[])lhsval;
+            byte[] rhs = (byte[])rhsval;
+            return compareUnsingedBytes(lhs, rhs);
         }
         else if (lhsval instanceof ByteBuffer && rhsval instanceof ByteBuffer) {
             ByteBuffer lhs = (ByteBuffer)lhsval;
             ByteBuffer rhs = (ByteBuffer)rhsval;
-            return lhs.compareTo(rhs);
+            return compareUnsingedBytes(lhs.array(), rhs.array());
         }
         else if (Objects.equals(lhsval, rhsval)) {
             return 0;
@@ -240,5 +240,29 @@ public abstract class CmpExecutor<T extends CmpOperateEntity>
             rhs = new BigDecimal(rhsval.toString());
         }
         return Objects.equals(lhs, rhs);
+    }
+
+    public static int compareUnsingedBytes(byte[] lhs, byte[] rhs)
+    {
+        int lhsLength = lhs.length;
+        int rhsLength = rhs.length;
+        int lhsIndex = 0;
+        int rhsIndex = 0;
+        int r;
+        while(true) {
+            if (lhsIndex == lhsLength) {
+                return rhsLength == rhsIndex ? 0 : -1;
+            }
+            else if (rhsLength == rhsIndex) {
+                return 1;
+            }
+            else if ((r = Integer.compareUnsigned((int)lhs[lhsIndex], (int)rhs[rhsIndex])) == 0) {
+                ++lhsIndex;
+                ++rhsIndex;
+            }
+            else {
+                return r;
+            }
+        }
     }
 }
