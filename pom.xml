@@ -23,7 +23,7 @@
     <guava.version>13.0.1</guava.version>
     <junit.version>4.12</junit.version>
     <commons-csv.version>1.4</commons-csv.version>
-    <postgresql.version>42.2.2</postgresql.version>
+    <postgresql.version>42.2.25</postgresql.version>
   </properties>
 
   <dependencies>
